@@ -29,100 +29,103 @@ static const char rcsid[] =
   "$FreeBSD$";
 #endif /* not lint */
 
-#include <grp.h>
-#include <libutil.h>
-#include <err.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <stdarg.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/param.h>
 
-#include "pwupd.h"
+#include "bitmap.h"
 
-static char * grpath = _PATH_PWD;
-
-int
-setgrdir(const char * dir)
+struct bitmap
+bm_alloc(int size)
 {
-	if (dir == NULL)
-		return -1;
-	else
-		grpath = strdup(dir);
-	if (grpath == NULL)
-		return -1;
+	struct bitmap   bm;
+	int             szmap = (size / 8) + !!(size % 8);
 
-	return 0;
+	bm.size = size;
+	bm.map = malloc(szmap);
+	if (bm.map)
+		memset(bm.map, 0, szmap);
+	return bm;
 }
 
-char *
-getgrpath(const char * file)
+void
+bm_dealloc(struct bitmap * bm)
 {
-	static char pathbuf[MAXPATHLEN];
-
-	snprintf(pathbuf, sizeof pathbuf, "%s/%s", grpath, file);
-	return pathbuf;
+	free(bm->map);
 }
 
-static int
-gr_update(struct group * grp, char const * group)
+static void
+bm_getmask(int *pos, unsigned char *bmask)
 {
-	int pfd, tfd;
-	struct group *gr = NULL;
-	struct group *old_gr = NULL;
-
-	if (grp != NULL)
-		gr = gr_dup(grp);
-
-	if (group != NULL)
-		old_gr = GETGRNAM(group);
-
-	if (gr_init(grpath, NULL))
-		err(1, "gr_init()");
-
-	if ((pfd = gr_lock()) == -1) {
-		gr_fini();
-		err(1, "gr_lock()");
-	}
-	if ((tfd = gr_tmp(-1)) == -1) {
-		gr_fini();
-		err(1, "gr_tmp()");
-	}
-	if (gr_copy(pfd, tfd, gr, old_gr) == -1) {
-		gr_fini();
-		err(1, "gr_copy()");
-	}
-	if (gr_mkdb() == -1) {
-		gr_fini();
-		err(1, "gr_mkdb()");
-	}
-	free(gr);
-	gr_fini();
-	return 0;
+	*bmask = (unsigned char) (1 << (*pos % 8));
+	*pos /= 8;
 }
 
-
-int
-addgrent(struct group * grp)
+void
+bm_setbit(struct bitmap * bm, int pos)
 {
-	return gr_update(grp, NULL);
+	unsigned char   bmask;
+
+	bm_getmask(&pos, &bmask);
+	bm->map[pos] |= bmask;
+}
+
+void
+bm_clrbit(struct bitmap * bm, int pos)
+{
+	unsigned char   bmask;
+
+	bm_getmask(&pos, &bmask);
+	bm->map[pos] &= ~bmask;
 }
 
 int
-chggrent(char const * login, struct group * grp)
+bm_isset(struct bitmap * bm, int pos)
 {
-	return gr_update(grp, login);
+	unsigned char   bmask;
+
+	bm_getmask(&pos, &bmask);
+	return !!(bm->map[pos] & bmask);
 }
 
 int
-delgrent(struct group * grp)
+bm_firstunset(struct bitmap * bm)
 {
-	char group[MAXLOGNAME];
+	int             szmap = (bm->size / 8) + !!(bm->size % 8);
+	int             at = 0;
+	int             pos = 0;
 
-	strlcpy(group, grp->gr_name, MAXLOGNAME);
+	while (pos < szmap) {
+		unsigned char   bmv = bm->map[pos++];
+		unsigned char   bmask = 1;
 
-	return gr_update(NULL, group);
+		while (bmask & 0xff) {
+			if ((bmv & bmask) == 0)
+				return at;
+			bmask <<= 1;
+			++at;
+		}
+	}
+	return at;
+}
+
+int
+bm_lastset(struct bitmap * bm)
+{
+	int             szmap = (bm->size / 8) + !!(bm->size % 8);
+	int             at = 0;
+	int             pos = 0;
+	int             ofs = 0;
+
+	while (pos < szmap) {
+		unsigned char   bmv = bm->map[pos++];
+		unsigned char   bmask = 1;
+
+		while (bmask & 0xff) {
+			if ((bmv & bmask) != 0)
+				ofs = at;
+			bmask <<= 1;
+			++at;
+		}
+	}
+	return ofs;
 }
