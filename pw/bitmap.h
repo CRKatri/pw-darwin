@@ -24,78 +24,29 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
+ *
+ * $FreeBSD$
  */
 
-#ifndef lint
-static const char rcsid[] =
-  "$FreeBSD$";
-#endif /* not lint */
+#ifndef _BITMAP_H_
+#define _BITMAP_H_
 
-#include <sys/types.h>
+#include <sys/cdefs.h>
 
-#include <err.h>
-#include <pwd.h>
-#include <libutil.h>
-#include <unistd.h>
-
-#include "pw.h"
-
-static int
-pw_nisupdate(const char * path, struct passwd * pwd, char const * user)
+struct bitmap
 {
-	int pfd, tfd;
-	struct passwd *pw = NULL;
-	struct passwd *old_pw = NULL;
+	int	      size;
+	unsigned char *map;
+};
 
-	printf("===> %s\n", path);
-	if (pwd != NULL)
-		pw = pw_dup(pwd);
+__BEGIN_DECLS
+struct bitmap bm_alloc(int size);
+void bm_dealloc(struct bitmap * bm);
+void bm_setbit(struct bitmap * bm, int pos);
+void bm_clrbit(struct bitmap * bm, int pos);
+int bm_isset(struct bitmap * bm, int pos);
+int bm_firstunset(struct bitmap * bm);
+int bm_lastset(struct bitmap * bm);
+__END_DECLS
 
-	if (user != NULL)
-		old_pw = GETPWNAM(user);
-
-	if (pw_init(NULL, path))
-		err(1,"pw_init()");
-	if ((pfd = pw_lock()) == -1) {
-		pw_fini();
-		err(1, "pw_lock()");
-	}
-	if ((tfd = pw_tmp(-1)) == -1) {
-		pw_fini();
-		err(1, "pw_tmp()");
-	}
-	if (pw_copy(pfd, tfd, pw, old_pw) == -1) {
-		pw_fini();
-		close(tfd);
-		err(1, "pw_copy()");
-	}
-	fsync(tfd);
-	close(tfd);
-	if (chmod(pw_tempname(), 0644) == -1)
-		err(1, "chmod()");
-	if (rename(pw_tempname(), path) == -1)
-		err(1, "rename()");
-
-	free(pw);
-	pw_fini();
-
-	return (0);
-}
-
-int
-addnispwent(const char *path, struct passwd * pwd)
-{
-	return pw_nisupdate(path, pwd, NULL);
-}
-
-int
-chgnispwent(const char *path, char const * login, struct passwd * pwd)
-{
-	return pw_nisupdate(path, pwd, login);
-}
-
-int
-delnispwent(const char *path, const char *login)
-{
-	return pw_nisupdate(path, NULL, login);
-}
+#endif				/* !_BITMAP_H */
