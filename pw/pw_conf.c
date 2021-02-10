@@ -41,6 +41,10 @@ static const char rcsid[] =
 
 #include "pw.h"
 
+long long
+freebsdstrtonum(const char *numstr, long long minval, long long maxval,
+    const char **errstrp);
+
 #define debugging 0
 
 enum {
@@ -380,7 +384,7 @@ read_userconfig(char const * file)
 				break;
 			case _UC_EXPIRE:
 				if ((q = unquote(q)) != NULL) {
-					config.expire_days = strtonum(q, 0,
+					config.expire_days = freebsdstrtonum(q, 0,
 					    INT_MAX, &errstr);
 					if (errstr)
 						warnx("Invalid expire days:"
@@ -389,7 +393,7 @@ read_userconfig(char const * file)
 				break;
 			case _UC_PASSWORD:
 				if ((q = unquote(q)) != NULL) {
-					config.password_days = strtonum(q, 0,
+					config.password_days = freebsdstrtonum(q, 0,
 					    INT_MAX, &errstr);
 					if (errstr)
 						warnx("Invalid password days:"

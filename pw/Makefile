@@ -1,18 +1,20 @@
-# $FreeBSD$
+CC              ?= aarch64-apple-darwin-clang
+STRIP           ?= aarch64-apple-darwin-strip
+LDID            ?= ldid
+CFLAGS          ?= -arch arm64  -isysroot /home/cameron/Documents/SDK/iPhoneOS14.3.sdk -miphoneos-version-min=13.0
+INSTALL         ?= install
+FAKEROOT        ?= fakeroot
+PREFIX          ?= /usr
+DESTDIR         ?= 
 
-PROG=	pw
-MAN=	pw.conf.5 pw.8
-SRCS=	pw.c pw_conf.c pw_user.c pw_group.c pw_log.c pw_nis.c pw_vpw.c \
-	grupd.c pwupd.c psdate.c bitmap.c cpdir.c rm_r.c strtounum.c \
-	pw_utils.c
+DEB_MAINTAINER  ?= Cameron Katri <me@cameronkatri.com>
+DEB_ARCH        ?= iphoneos-arm
 
-WARNS?=	3
+all: pw
 
-LIBADD=	crypt util sbuf
+pw:
+	$(CC) $(CFLAGS) -o pw -I. -Isbuf -Ilibutil *.c sbuf/*.c libutil/*.c
+	$(STRIP) pw
 
-.include <src.opts.mk>
-
-HAS_TESTS=
-SUBDIR.${MK_TESTS}+= tests
-
-.include <bsd.prog.mk>
+clean:
+	rm -f pw

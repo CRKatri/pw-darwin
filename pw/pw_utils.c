@@ -37,6 +37,10 @@ __FBSDID("$FreeBSD$");
 
 #include "pw.h"
 
+long long
+freebsdstrtonum(const char *numstr, long long minval, long long maxval,
+    const char **errstrp);
+
 int
 pw_checkfd(char *nptr)
 {
@@ -45,7 +49,7 @@ pw_checkfd(char *nptr)
 
 	if (strcmp(nptr, "-") == 0)
 		return '-';
-	fd = strtonum(nptr, 0, INT_MAX, &errstr);
+	fd = freebsdstrtonum(nptr, 0, INT_MAX, &errstr);
 	if (errstr != NULL)
 		errx(EX_USAGE, "Bad file descriptor '%s': %s",
 		    nptr, errstr);
