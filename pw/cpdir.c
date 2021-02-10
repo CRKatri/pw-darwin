@@ -60,7 +60,7 @@ copymkdir(int rootfd, char const * dir, int skelfd, mode_t mode, uid_t uid,
 	}
 	fchownat(rootfd, dir, uid, gid, AT_SYMLINK_NOFOLLOW);
 	if (flags > 0)
-		chflagsat(rootfd, dir, flags, AT_SYMLINK_NOFOLLOW);
+		lchflags(dir, flags);
 
 	if (skelfd == -1)
 		return;
