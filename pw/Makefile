@@ -48,6 +48,7 @@ install-pw: pw pw.8 pw.conf.5
 	$(GINSTALL) -Dm755 pw $(DESTDIR)/$(PREFIX)/sbin/pw
 	$(GINSTALL) -Dm644 pw.8 $(DESTDIR)/$(PREFIX)/share/man/man8/pw.8
 	$(GINSTALL) -Dm644 pw.conf.5 $(DESTDIR)/$(PREFIX)/share/man/man5/pw.conf.5
+	mkdir -p $(DESTDIR)/$(PREFIX)/share/skel
 
 clean:
 	rm -f pw
