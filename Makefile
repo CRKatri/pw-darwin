@@ -1,0 +1,9 @@
+TOPTARGETS := all clean install
+SUBDIRS := adduser pw
+
+$(TOPTARGETS): $(SUBDIRS)
+
+$(SUBDIRS):
+	$(MAKE) -C $@ $(MAKECMDGOALS)
+
+.PHONY: $(TOPTARGETS) $(SUBDIRS)
