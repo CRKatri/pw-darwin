@@ -40,7 +40,7 @@ all: pw
 install: install-pw
 
 pw: $(SRC) $(LIBUTILSRC) $(SBUFSRC) ent.xml
-	$(CC) $(CFLAGS) -o pw -I. -Isbuf -Ilibutil $(SRC) $(LIBUTILSRC) $(SBUFSRC)
+	$(CC) $(CFLAGS) -o pw -I. -Isbuf -Ilibutil $(SRC) $(LIBUTILSRC) $(SBUFSRC) -lcrypt
 	$(STRIP) pw
 	$(LDID) -Sent.xml pw
 
