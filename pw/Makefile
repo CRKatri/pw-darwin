@@ -2,6 +2,7 @@ CC              ?= aarch64-apple-darwin-clang
 STRIP           ?= aarch64-apple-darwin-strip
 LDID            ?= ldid
 CFLAGS          ?= -arch arm64  -isysroot /home/cameron/Documents/SDK/iPhoneOS14.3.sdk -miphoneos-version-min=13.0
+LDFLAGS         ?=
 GINSTALL        ?= install
 PREFIX          ?= /usr
 DESTDIR         ?=
@@ -40,7 +41,7 @@ all: pw
 install: install-pw
 
 pw: $(SRC) $(LIBUTILSRC) $(SBUFSRC) ent.xml
-	$(CC) $(CFLAGS) -o pw -I. -Isbuf -Ilibutil $(SRC) $(LIBUTILSRC) $(SBUFSRC) -lcrypt
+	$(CC) $(CFLAGS) -o pw -I. -Isbuf -Ilibutil $(SRC) $(LIBUTILSRC) $(SBUFSRC) $(LDFLAGS) -lcrypt
 	$(STRIP) pw
 	$(LDID) -Sent.xml pw
 
