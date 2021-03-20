@@ -100,7 +100,7 @@ static struct userconf config =
 	"/usr/share/skel",	/* Where to obtain skeleton files */
 	NULL,			/* Mail to send to new accounts */
 	"/var/log/userlog",	/* Where to log changes */
-	"/home",		/* Where to create home directory */
+	"/var",			/* Where to create home directory */
 	_DEF_DIRMODE,		/* Home directory perms, modified by umask */
 	"/bin",			/* Where shells are located */
 	system_shells,		/* List of shells (first is default) */
