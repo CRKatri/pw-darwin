@@ -36,6 +36,7 @@ static const char rcsid[] =
 #include <sys/types.h>
 
 #include <assert.h>
+#include <crypt.h>
 #include <ctype.h>
 #include <dirent.h>
 #include <err.h>
@@ -636,27 +637,16 @@ pw_shellpolicy(struct userconf * cnf)
 	return shell_path(cnf->shelldir, cnf->shells, cnf->shell_default);
 }
 
-#define	SALTSIZE	32
-
 static char const chars[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./";
 
 char *
 pw_pwcrypt(char *password)
 {
-	int             i;
-	char            salt[SALTSIZE + 1];
 	char		*cryptpw;
 	static char     buf[256];
 	size_t		pwlen;
 
-	/*
-	 * Calculate a salt value
-	 */
-	for (i = 0; i < SALTSIZE; i++)
-		salt[i] = chars[arc4random_uniform(sizeof(chars) - 1)];
-	salt[SALTSIZE] = '\0';
-
-	cryptpw = crypt(password, salt);
+	cryptpw = crypt(password, crypt_gensalt("$6$", 0, chars, strlen(chars)));
 	if (cryptpw == NULL)
 		errx(EX_CONFIG, "crypt(3) failure");
 	pwlen = strlcpy(buf, cryptpw, sizeof(buf));
