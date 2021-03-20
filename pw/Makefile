@@ -40,10 +40,13 @@ all: pw
 
 install: install-pw
 
-pw: $(SRC) $(LIBUTILSRC) $(SBUFSRC) ent.xml
-	$(CC) $(CFLAGS) -o pw -I. -Isbuf -Ilibutil $(SRC) $(LIBUTILSRC) $(SBUFSRC) $(LDFLAGS) -lcrypt
-	$(STRIP) pw
-	$(LDID) -Sent.xml pw
+pw: $(SRC:%.c=%.o) $(LIBUTILSRC:%.c=%.o) $(SBUFSRC:%.c=%.o) ent.xml
+	$(CC) $(LDFLAGS) -o $@ -lcrypt $(SRC:%.c=%.o) $(LIBUTILSRC:%.c=%.o) $(SBUFSRC:%.c=%.o)
+	$(STRIP) $@
+	$(LDID) -Sent.xml $@
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $< -I. -Isbuf -Ilibutil
 
 install-pw: pw pw.8 pw.conf.5
 	$(GINSTALL) -Dm755 pw $(DESTDIR)/$(PREFIX)/sbin/pw
@@ -52,6 +55,6 @@ install-pw: pw pw.8 pw.conf.5
 	mkdir -p $(DESTDIR)/$(PREFIX)/share/skel
 
 clean:
-	rm -f pw
+	rm -f pw $(SRC:%.c=%.o) $(LIBUTILSRC:%.c=%.o) $(SBUFSRC:%.c=%.o)
 
 .PHONY: all install install-pw clean

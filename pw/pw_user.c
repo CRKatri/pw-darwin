@@ -224,7 +224,6 @@ static struct passwd fakeuser = {
 	"User &",
 	"/nonexistent",
 	"/bin/sh",
-	0,
 	0
 };
 
@@ -1077,9 +1076,11 @@ pw_user_del(int argc, char **argv, char *arg1)
 	if (name == NULL)
 		name = pwd->pw_name;
 
-	if (strcmp(pwd->pw_name, "root") == 0)
-		errx(EX_DATAERR, "cannot remove user 'root'");
-
+	char *system_users[30] = {"nobody", "root", "mobile", "daemon", "_ftp", "_networkd", "_wireless", "_installd", "_neagent", "_ifccd", "_securityd", "_mdnsresponder", "_sshd", "_unknown", "_distnote", "_astris", "_ondemand", "_findmydevice", "_datadetectors", "_captiveagent", "_analyticsd", "_timed", "_gpsd", "_reportmemoryexception", "_diskimagesiod", "_logd", "_iconservices", "_fud", "_knowledgegraphd", "_coreml"};
+  for (int i = 0; i < 30; i++) {
+		if (strcmp(pwd->pw_name, system_users[i]) == 0)
+			errx(EX_DATAERR, "cannot remove user '%s'", system_users[i]);
+  }
 	/* Remove opie record from /etc/opiekeys */
 	if (PWALTDIR() != PWF_ALT)
 		rmopie(pwd->pw_name);
@@ -1158,7 +1159,6 @@ pw_user_del(int argc, char **argv, char *arg1)
 
 	/* Remove home directory and contents */
 	if (PWALTDIR() != PWF_ALT && deletehome && *home == '/' &&
-	    GETPWUID(id) == NULL &&
 	    fstatat(conf.rootfd, home + 1, &st, 0) != -1) {
 		rm_r(conf.rootfd, home, id);
 		pw_log(cnf, M_DELETE, W_USER, "%s(%ju) home '%s' %s"
