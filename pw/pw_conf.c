@@ -307,7 +307,7 @@ read_userconfig(char const * file)
 				break;
 			case _UC_HOMEROOT:
 				config.home = (q == NULL || !boolean_val(q, 1))
-					? "/home" : newstr(q);
+					? "/var" : newstr(q);
 				break;
 			case _UC_HOMEMODE:
 				modeset = setmode(q);
