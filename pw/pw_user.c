@@ -1511,8 +1511,6 @@ pw_user_add(int argc, char **argv, char *arg1)
 
 	if (!grname)
 		grname = cmdcnf->default_group;
-	
-	split_groups(&cmdcnf->groups, grname);
 
 	pwd = &fakeuser;
 	pwd->pw_name = name;
@@ -1520,6 +1518,8 @@ pw_user_add(int argc, char **argv, char *arg1)
 	pwd->pw_uid = pw_uidpolicy(cmdcnf, id);
 	pwd->pw_gid = pw_gidpolicy(cnf, grname, pwd->pw_name,
 	    (gid_t) pwd->pw_uid, dryrun);
+	
+	split_groups(&cmdcnf->groups, grname);
 
 	/* cmdcnf->password_days and cmdcnf->expire_days hold unixtime here */
 	if (cmdcnf->password_days > 0)
