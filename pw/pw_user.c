@@ -1511,6 +1511,8 @@ pw_user_add(int argc, char **argv, char *arg1)
 
 	if (!grname)
 		grname = cmdcnf->default_group;
+	
+	split_groups(&cmdcnf->groups, grname);
 
 	pwd = &fakeuser;
 	pwd->pw_name = name;
