@@ -65,7 +65,10 @@ __SCCSID("@(#)pw_util.c	8.3 (Berkeley) 4/2/94");
 #include <unistd.h>
 
 #include "libutil.h"
-#include "reallocarray.h"
+
+#include <os/availability.h>
+API_AVAILABLE(macos(10.12), ios(10.0), tvos(10.0), watchos(3.0))
+void * reallocarray(void * in_ptr, size_t nmemb, size_t size) __DARWIN_EXTSN(reallocarray) __result_use_check;
 
 static pid_t editpid = -1;
 static int lockfd = -1;

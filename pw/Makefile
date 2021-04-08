@@ -13,7 +13,6 @@ SRC := pw_utils.c \
 	bitmap.c \
 	psdate.c \
 	pw_nis.c \
-	reallocarray.c \
 	pw.c \
 	grupd.c \
 	pwupd.c \
