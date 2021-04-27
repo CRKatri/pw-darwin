@@ -24,9 +24,6 @@ SRC := pw_utils.c \
 	cpdir.c \
 	strtonum.c
 
-SBUFSRC := sbuf/subr_sbuf.c \
-	sbuf/subr_prf.c
-
 LIBUTILSRC := libutil/_secure_path.c \
 	libutil/gr_util.c \
 	libutil/flopen.c \
@@ -45,7 +42,7 @@ pw: $(SRC:%.c=%.o) $(LIBUTILSRC:%.c=%.o) $(SBUFSRC:%.c=%.o) ent.xml
 	$(LDID) -Sent.xml $@
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $< -I. -Isbuf -Ilibutil
+	$(CC) $(CFLAGS) -c -o $@ $< -I. -Ilibutil
 
 install-pw: pw pw.8 pw.conf.5
 	$(GINSTALL) -Dm755 pw $(DESTDIR)/$(PREFIX)/sbin/pw
