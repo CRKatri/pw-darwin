@@ -391,7 +391,7 @@ this is only used if the home directory is to be different from the
 default determined from
 .Pa /etc/pw.conf
 - normally
-.Pa /home
+.Pa /var
 with the account name as a subdirectory.
 .It Fl e Ar date
 Set the account's expiration date.
@@ -597,7 +597,7 @@ option is used.
 .It Fl b Ar dir
 Set the root directory in which user home directories are created.
 The default value for this is
-.Pa /home ,
+.Pa /var ,
 but it may be set elsewhere as desired.
 .It Fl e Ar days
 Set the default account expiration period in days.
@@ -968,7 +968,7 @@ A gsmith login group is created if not already present.
 The login shell is set to
 .Xr csh 1 .
 A new home directory at
-.Pa /home/gsmith
+.Pa /var/gsmith
 is created if it does not already exist.
 Finally, a random password is generated and displayed:
 .Bd -literal -offset indent

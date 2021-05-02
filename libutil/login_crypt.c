@@ -46,7 +46,5 @@ login_setcryptfmt(login_cap_t *lc, const char *def, const char *error) {
 		    "passwd_format = %s\n", cipher);
 	if (cipher == NULL)
 		return (error);
-	if (!crypt_set_format(cipher))
-		return (error);
 	return (cipher);
 }

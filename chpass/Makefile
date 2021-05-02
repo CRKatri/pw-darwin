@@ -1,45 +1,42 @@
-#	@(#)Makefile	8.2 (Berkeley) 4/2/94
-# $FreeBSD$
+CC              ?= aarch64-apple-darwin-clang
+STRIP           ?= aarch64-apple-darwin-strip
+LDID            ?= ldid
+CFLAGS          ?= -arch arm64  -isysroot /home/cameron/Documents/SDK/iPhoneOS14.3.sdk -miphoneos-version-min=13.0
+LDFLAGS         ?=
+GINSTALL        ?= install
+PREFIX          ?= /usr
+DESTDIR         ?=
 
-.include <src.opts.mk>
+SRC := chpass.c \
+	edit.c \
+	field.c \
+	table.c \
+	util.c \
+	../libutil/pw_util.c \
+	../libutil/flopen.c \
+	../libc/gen/pw_scan.c
 
-.PATH: ${SRCTOP}/lib/libc/gen
+all: chpass
 
-PROG=	chpass
-SRCS=	chpass.c edit.c field.c pw_scan.c table.c util.c
-BINOWN=	root
-BINMODE=4555
-PRECIOUSPROG=
-.if ${MK_NIS} != "no"
-CFLAGS+= -DYP
-.endif
-#Some people need this, uncomment to activate
-#CFLAGS+=-DRESTRICT_FULLNAME_CHANGE
-CFLAGS+=-I${SRCTOP}/lib/libc/gen -I.
+install: install-chpass
 
-LIBADD=	crypt util
-.if ${MK_NIS} != "no"
-LIBADD+=	ypclnt
-.endif 
+chpass: $(SRC:%.c=%.o) ../ent.xml
+	$(CC) $(LDFLAGS) -o $@ -lcrypt $(SRC:%.c=%.o)
+	$(STRIP) $@
+	$(LDID) -S../ent.xml $@
 
-SYMLINKS=	chpass ${BINDIR}/chfn
-SYMLINKS+=	chpass ${BINDIR}/chsh
-.if ${MK_NIS} != "no"
-SYMLINKS+=	chpass ${BINDIR}/ypchfn
-SYMLINKS+=	chpass ${BINDIR}/ypchpass
-SYMLINKS+=	chpass ${BINDIR}/ypchsh
-.endif
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $< -I. -I../libutil -I../libc/gen
 
-MLINKS=	chpass.1 chfn.1 chpass.1 chsh.1
-.if ${MK_NIS} != "no"
-MLINKS+= chpass.1 ypchpass.1 chpass.1 ypchfn.1 chpass.1 ypchsh.1
-.endif
+install-chpass: chpass chpass.1
+	$(GINSTALL) -Dm4555 chpass $(DESTDIR)/$(PREFIX)/bin/chpass
+	ln -sf chpass $(DESTDIR)/$(PREFIX)/bin/chfn
+	ln -sf chpass $(DESTDIR)/$(PREFIX)/bin/chsh
+	$(GINSTALL) -Dm644 chpass.1 $(DESTDIR)/$(PREFIX)/share/man/man1/chpass.1
+	ln -sf chpass.1 $(DESTDIR)/$(PREFIX)/share/man/man1/chfn.1
+	ln -sf chpass.1 $(DESTDIR)/$(PREFIX)/share/man/man1/chsh.1
 
-beforeinstall:
-.for i in chpass chfn chsh ypchpass ypchfn ypchsh
-.if exists(${DESTDIR}${BINDIR}/$i)
-	-chflags noschg ${DESTDIR}${BINDIR}/$i
-.endif
-.endfor
+clean:
+	rm -f chpass $(SRC:%.c=%.o)
 
-.include <bsd.prog.mk>
+.PHONY: all install install-chpass clean

@@ -62,7 +62,7 @@ pwdb_check(void)
 	char           *args[10];
 
 	args[i++] = _PATH_PWD_MKDB;
-	args[i++] = "-C";
+	args[i++] = "-c";
 
 	if (strcmp(conf.etcpath, _PATH_PWD) != 0) {
 		args[i++] = "-d";

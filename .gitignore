@@ -1,0 +1,3 @@
+*.o
+pw/pw
+chpass/chpass

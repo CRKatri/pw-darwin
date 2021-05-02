@@ -36,6 +36,7 @@ static const char rcsid[] =
 #include <fcntl.h>
 #include <string.h>
 #include <stdarg.h>
+#include <time.h>
 
 #include "pw.h"
 

@@ -64,6 +64,10 @@ __SCCSID("@(#)pw_util.c	8.3 (Berkeley) 4/2/94");
 #include <string.h>
 #include <unistd.h>
 
+#include <os/availability.h>
+API_AVAILABLE(macos(10.12), ios(10.0), tvos(10.0), watchos(3.0))
+void * reallocarray(void * in_ptr, size_t nmemb, size_t size) __DARWIN_EXTSN(reallocarray) __result_use_check;
+
 #include "libutil.h"
 
 static pid_t editpid = -1;
@@ -95,7 +99,7 @@ pw_init(const char *dir, const char *master)
 #endif
 
 	if (dir == NULL) {
-		strcpy(passwd_dir, _PATH_ETC);
+		strcpy(passwd_dir, _PATH_PWD);
 	} else {
 		if (strlen(dir) >= sizeof(passwd_dir)) {
 			errno = ENAMETOOLONG;
@@ -344,8 +348,8 @@ pw_edit(int notsetuid)
 	sigprocmask(SIG_SETMASK, &oldsigset, NULL);
 	if (stat(tempname, &st2) == -1)
 		return (-1);
-	return (st1.st_mtim.tv_sec != st2.st_mtim.tv_sec ||
-	    st1.st_mtim.tv_nsec != st2.st_mtim.tv_nsec);
+	return (st1.st_mtimespec.tv_sec != st2.st_mtimespec.tv_sec ||
+	    st1.st_mtimespec.tv_nsec != st2.st_mtimespec.tv_nsec);
 }
 
 /*

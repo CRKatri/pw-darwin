@@ -44,6 +44,10 @@ __FBSDID("$FreeBSD$");
 #include <syslog.h>
 #include <unistd.h>
 
+#include <os/availability.h>
+API_AVAILABLE(macos(10.12), ios(10.0), tvos(10.0), watchos(3.0))
+void * reallocarray(void * in_ptr, size_t nmemb, size_t size) __DARWIN_EXTSN(reallocarray) __result_use_check;
+
 /*
  * allocstr()
  * Manage a single static pointer for handling a local char* buffer,

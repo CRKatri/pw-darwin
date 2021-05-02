@@ -156,7 +156,7 @@ rm_ipc() {
 	for i in s m q; do
 		ipcs -$i |
 		awk -v i=$i -v login=$1 '$1 == i && $5 == login { print $2 }' |
-		xargs -n 1 ipcrm -$i
+		xargs -r -n 1 ipcrm -$i
 	done
 	verbose && echo '.'
 }
