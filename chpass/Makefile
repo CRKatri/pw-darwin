@@ -33,8 +33,8 @@ install-chpass: chpass chpass.1
 	ln -sf chpass $(DESTDIR)/$(PREFIX)/bin/chfn
 	ln -sf chpass $(DESTDIR)/$(PREFIX)/bin/chsh
 	$(GINSTALL) -Dm644 chpass.1 $(DESTDIR)/$(PREFIX)/share/man/man1/chpass.1
-	ln -sf chpass.1 $(DESTDIR)/$(PREFIX)/share/man/man1/chfn.1
-	ln -sf chpass.1 $(DESTDIR)/$(PREFIX)/share/man/man1/chsh.1
+	ln -sf chpass.1.zst $(DESTDIR)/$(PREFIX)/share/man/man1/chfn.1
+	ln -sf chpass.1.zst $(DESTDIR)/$(PREFIX)/share/man/man1/chsh.1
 
 clean:
 	rm -f chpass $(SRC:%.c=%.o)
