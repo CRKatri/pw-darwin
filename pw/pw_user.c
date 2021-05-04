@@ -56,161 +56,6 @@ static const char rcsid[] =
 #include "bitmap.h"
 #include "psdate.h"
 
-#include <spawn.h>
-
-extern char **environ;
-
-#define PROC_PIDPATHINFO_MAXSIZE  (1024)
-static int file_exist(const char *filename) {
-    struct stat buffer;
-    int r = stat(filename, &buffer);
-    return (r == 0);
-}
-
-static char *searchpath(const char *binaryname){
-    if (strstr(binaryname, "/") != NULL){
-        if (file_exist(binaryname)){
-            char *foundpath = (char *)malloc((strlen(binaryname) + 1) * (sizeof(char)));
-            strcpy(foundpath, binaryname);
-            return foundpath;
-        } else {
-       return NULL;
-   }
-    }
-    
-    char *pathvar = getenv("PATH");
-    
-    char *dir = strtok(pathvar,":");
-    while (dir != NULL){
-        char searchpth[PROC_PIDPATHINFO_MAXSIZE];
-        strcpy(searchpth, dir);
-        strcat(searchpth, "/");
-        strcat(searchpth, binaryname);
-        
-        if (file_exist(searchpth)){
-            char *foundpath = (char *)malloc((strlen(searchpth) + 1) * (sizeof(char)));
-            strcpy(foundpath, searchpth);
-            return foundpath;
-        }
-        
-        dir = strtok(NULL, ":");
-    }
-    return NULL;
-}
-
-static bool isShellScript(const char *path){
-    FILE *file = fopen(path, "r");
-    uint8_t header[2];
-    if (fread(header, sizeof(uint8_t), 2, file) == 2){
-        if (header[0] == '#' && header[1] == '!'){
-            fclose(file);
-            return true;
-        }
-    }
-    fclose(file);
-    return false;
-}
-
-static char *getInterpreter(char *path){
-    FILE *file = fopen(path, "r");
-    char *interpreterLine = NULL;
-    unsigned long lineSize = 0;
-    getline(&interpreterLine, &lineSize, file);
-    
-    char *rawInterpreter = (interpreterLine+2);
-    rawInterpreter = strtok(rawInterpreter, " ");
-    rawInterpreter = strtok(rawInterpreter, "\n");
-    
-    char *interpreter = (char *)malloc((strlen(rawInterpreter)+1) * sizeof(char));
-    strcpy(interpreter, rawInterpreter);
-    
-    free(interpreterLine);
-    fclose(file);
-    return interpreter;
-}
-
-static char *fixedCmd(const char *cmdStr){
-    char *cmdCpy = (char *)malloc((strlen(cmdStr)+1) * sizeof(char));
-    strcpy(cmdCpy, cmdStr);
-    
-    char *cmd = strtok(cmdCpy, " ");
-    
-    uint8_t size = strlen(cmd) + 1;
-    
-    char *args = cmdCpy + size;
-    if ((strlen(cmdStr) - strlen(cmd)) == 0)
-        args = NULL;
-    
-    char *abs_path = searchpath(cmd);
-    if (abs_path){
-        bool isScript = isShellScript(abs_path);
-        if (isScript){
-            char *interpreter = getInterpreter(abs_path);
-            
-            uint8_t commandSize = strlen(interpreter) + 1 + strlen(abs_path);
-            
-            if (args){
-                commandSize += 1 + strlen(args);
-            }
-            
-            char *rawCommand = (char *)malloc(sizeof(char) * (commandSize + 1));
-            strcpy(rawCommand, interpreter);
-            strcat(rawCommand, " ");
-            strcat(rawCommand, abs_path);
-            
-            if (args){
-                strcat(rawCommand, " ");
-                strcat(rawCommand, args);
-            }
-       rawCommand[(commandSize)+1] = '\0';
-            
-            free(interpreter);   
-            free(abs_path);    
-            free(cmdCpy);
-            
-            return rawCommand;
-        } else {
-            uint8_t commandSize = strlen(abs_path);
-            
-            if (args){
-                commandSize += 1 + strlen(args);
-            }
-            
-            char *rawCommand = (char *)malloc(sizeof(char) * (commandSize + 1));
-            strcat(rawCommand, abs_path);
-            
-            if (args){
-                strcat(rawCommand, " ");  
-                strcat(rawCommand, args);
-            }
-       rawCommand[(commandSize)+1] = '\0';
-            
-            free(abs_path);
-            free(cmdCpy);
-            
-            return rawCommand; 
-        }
-    }
-    return cmdCpy;
-}
-
-int RunCmd(const char *cmd) {
-    pid_t pid;
-    char *rawCmd = fixedCmd(cmd);
-    char *argv[] = {"sh", "-c", (char*)rawCmd, NULL};
-    int status;
-    status = posix_spawn(&pid, "/bin/sh", NULL, NULL, argv, environ);
-    if (status == 0) {
-        if (waitpid(pid, &status, 0) == -1) {   
-            perror("waitpid");
-        }   
-    } else {
-        printf("posix_spawn: %s\n", strerror(status));
-    }
-    free(rawCmd);
-    return status;
-}
-
 #define LOGNAMESIZE (MAXLOGNAME-1)
 
 static		char locked_str[] = "*LOCKED*";
@@ -845,7 +690,7 @@ rmat(uid_t uid)
 
 				snprintf(tmp, sizeof(tmp), "/usr/bin/atrm %s",
 				    e->d_name);
-				RunCmd(tmp);
+				system(tmp);
 			}
 		}
 		closedir(d);
@@ -1083,7 +928,7 @@ pw_user_del(int argc, char **argv, char *arg1)
 		if (access(file, F_OK) == 0) {
 			snprintf(file, sizeof(file), "crontab -u %s -r",
 			    pwd->pw_name);
-			RunCmd(file);
+			system(file);
 		}
 	}
 
